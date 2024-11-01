@@ -1,7 +1,9 @@
 package com.ajudaqui.dicegames
 
 import android.R
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -26,7 +28,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ajudaqui.dicegames.ui.theme.DiceGamesTheme
@@ -43,19 +44,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    App()
+                    App(this)
                 }
             }
         }
     }
 }
 
+
 @Composable
 fun Dice(number: Int, modifier: Modifier) {
 
     Canvas(modifier) {
         drawRoundRect(
-            Color.LightGray,
+            Color.White,
             cornerRadius = CornerRadius(20f, 20f),
             topLeft = Offset(10f, 10f),
             size = size
@@ -147,19 +149,24 @@ fun DrawScope.cima_baixo() {
 }
 
 @Composable
-fun App() {
+fun App(context: Context) {
 
     // mantem o valor da variavel enquanto a tela é renderizada
-    var face_dice by remember { mutableStateOf(3) }
+    var face_dice by remember { mutableStateOf(1) }
     var time by remember { mutableStateOf(0) }
+    var end_game by remember { mutableStateOf(false) } // Adiciona o estado para o fim do jogo
 
 
     LaunchedEffect(key1 = time) {
         // Para ir diminuindo aos poucos
+        delay(500L)
         if (time > 0) {
             delay((500 * (1.0f / time).toLong()))
+//            delay(1000L)
             face_dice = Random.nextInt(1, 7)
             time -= 1
+        }else{
+            end_game = true
         }
     }
 
@@ -175,39 +182,48 @@ fun App() {
                 .align(Alignment.Center)
         )
 
-        if (face_dice == 6) {
-            Dice(
-                4, modifier = Modifier
-                    .size(96.dp, 96.dp)
-                    .align(Alignment.TopStart)
-            )
-        }
+//        if (face_dice == 6) {
+//            Dice(
+//                4, modifier = Modifier
+//                    .size(96.dp, 96.dp)
+//                    .align(Alignment.TopStart)
+//            )
+//        }
         Button(
             onClick = {
-                face_dice = 6
+                time = 10
             }, modifier = Modifier
                 .align(Alignment.Center)
                 .offset(y = (100).dp)
         ) {
+            if (time == 0) {
+                end_game = false // Reseta o fim do jogo ao reiniciar
+                Text(text = "Iniciar")
 
-            if (time > 0) {
-                Text(text = "$time")
             } else {
-                Text(text = "Jogar")
+                Text(text = "acaba em: $time")
             }
 
+            if(end_game){
+                Toast.makeText(
+                    context,
+                    "Fim de jogo, seu resultado foi: $face_dice",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    DiceGamesTheme {
-// esse surface esta reprsentando a tela do smartfone
-        Surface(modifier = Modifier.fillMaxSize()) {
-            App()
-        }
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    DiceGamesTheme {
+//// esse surface esta reprsentando a tela do smartfone
+//        Surface(modifier = Modifier.fillMaxSize()) {
+//            App()
+// para o previw poder fincionar, retira o contex do metodo app
+//        }
+//    }
+//}

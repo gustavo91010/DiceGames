@@ -15,6 +15,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -25,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ajudaqui.dicegames.ui.theme.DiceGamesTheme
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +55,7 @@ fun Dice(number: Int, modifier: Modifier) {
 
     Canvas(modifier) {
         drawRoundRect(
-            Color.Red,
+            Color.LightGray,
             cornerRadius = CornerRadius(20f, 20f),
             topLeft = Offset(10f, 10f),
             size = size
@@ -62,17 +69,21 @@ fun DrawScope.bullet(number: Int) {
         1 -> {
             center()
         }
+
         2 -> {
             dois_indo()
         }
+
         3 -> {
             dois_indo()
             center()
         }
+
         4 -> {
             dois_indo()
             dois_vindo()
         }
+
         5 -> {
             dois_indo()
             center()
@@ -137,6 +148,21 @@ fun DrawScope.cima_baixo() {
 
 @Composable
 fun App() {
+
+    // mantem o valor da variavel enquanto a tela é renderizada
+    var face_dice by remember { mutableStateOf(3) }
+    var time by remember { mutableStateOf(0) }
+
+
+    LaunchedEffect(key1 = time) {
+        // Para ir diminuindo aos poucos
+        if (time > 0) {
+            delay((500 * (1.0f / time).toLong()))
+            face_dice = Random.nextInt(1, 7)
+            time -= 1
+        }
+    }
+
     // interesante...
     Box(
         modifier = Modifier
@@ -144,21 +170,32 @@ fun App() {
             .background(Color.Gray)
     ) {
         Dice(
-            6, modifier = Modifier
+            face_dice, modifier = Modifier
                 .size(96.dp, 96.dp)
                 .align(Alignment.Center)
         )
-        Dice(
-            4, modifier = Modifier
-                .size(96.dp, 96.dp)
-                .align(Alignment.TopStart)
-        )
+
+        if (face_dice == 6) {
+            Dice(
+                4, modifier = Modifier
+                    .size(96.dp, 96.dp)
+                    .align(Alignment.TopStart)
+            )
+        }
         Button(
-            onClick = { /*TODO*/ }, modifier = Modifier
+            onClick = {
+                face_dice = 6
+            }, modifier = Modifier
                 .align(Alignment.Center)
                 .offset(y = (100).dp)
         ) {
-            Text(text = "Jogar")
+
+            if (time > 0) {
+                Text(text = "$time")
+            } else {
+                Text(text = "Jogar")
+            }
+
         }
     }
 
